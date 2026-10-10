@@ -40,14 +40,18 @@ async function apiRequest(url, options = {}) {
     return data;
 }
 
+
 function showFeedback(message, type = 'success', errors = []) {
     feedback.replaceChildren();
     feedback.className = `feedback ${type}`;
     feedback.hidden = false;
 
+    const content = document.createElement('div');
+    content.className = 'feedback-content';
+
     const text = document.createElement('p');
     text.textContent = message;
-    feedback.appendChild(text);
+    content.appendChild(text);
 
     if (errors.length) {
         const list = document.createElement('ul');
@@ -58,13 +62,60 @@ function showFeedback(message, type = 'success', errors = []) {
             list.appendChild(item);
         });
 
-        feedback.appendChild(list);
+        content.appendChild(list);
     }
+
+    const closeButton = document.createElement('button');
+    closeButton.type = 'button';
+    closeButton.className = 'feedback-close';
+    closeButton.textContent = '×';
+    closeButton.setAttribute('aria-label', 'Fechar mensagem');
+    closeButton.addEventListener('click', () => {
+        feedback.hidden = true;
+    });
+
+    feedback.append(content, closeButton);
+}
+
+function translateValidationMessage(message) {
+    const translations = {
+        'The cpf has already been taken.':
+            'Este CPF já está cadastrado.',
+
+        'The cpf field must be 11 characters.':
+            'O CPF deve conter exatamente 11 dígitos.',
+
+        'The cpf field format is invalid.':
+            'O CPF deve conter apenas 11 dígitos numéricos.',
+
+        'The name field is required.':
+            'O nome é obrigatório.',
+
+        'The cpf field is required.':
+            'O CPF é obrigatório.',
+
+        'The birth date field is required.':
+            'A data de nascimento é obrigatória.',
+
+        'The health unit id field is required.':
+            'Selecione uma unidade de saúde.',
+
+        'The selected health unit id is invalid.':
+            'A unidade de saúde selecionada não existe.',
+
+        'The birth date field must be a date before or equal to today.':
+            'A data de nascimento não pode ser futura.',
+    };
+
+    return translations[message] ?? message;
 }
 
 function showApiError(error) {
     if (error.status === 422 && error.data?.errors) {
-        const messages = Object.values(error.data.errors).flat();
+        const messages = Object.values(error.data.errors)
+            .flat()
+            .map(translateValidationMessage);
+
         showFeedback('Verifique os dados informados.', 'error', messages);
         return;
     }

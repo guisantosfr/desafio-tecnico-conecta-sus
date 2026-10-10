@@ -146,9 +146,42 @@ td button {
 }
 
 .feedback {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+
     margin-bottom: 20px;
     padding: 12px 16px;
     border-radius: 6px;
+}
+
+.feedback-content {
+    flex: 1;
+    min-width: 0;
+}
+
+.feedback-content p {
+    margin: 0;
+}
+
+.feedback-content ul {
+    margin-bottom: 0;
+}
+
+.feedback-close {
+    flex-shrink: 0;
+    padding: 0 4px;
+    background: transparent;
+    color: inherit;
+    font-size: 1.5rem;
+    font-weight: bold;
+    line-height: 1;
+}
+
+.feedback-close:hover {
+    background: transparent;
+    opacity: 0.7;
 }
 
 .feedback.success {
