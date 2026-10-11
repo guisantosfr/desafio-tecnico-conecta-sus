@@ -15,7 +15,12 @@ const birthDateInput = document.querySelector('#birth_date');
 
 let editingPatientId = null;
 
-birthDateInput.max = new Date().toLocaleDateString('en-CA');
+const today = new Date();
+const year = today.getFullYear();
+const month = String(today.getMonth() + 1).padStart(2, '0');
+const day = String(today.getDate()).padStart(2, '0');
+
+birthDateInput.max = `${year}-${month}-${day}`;
 
 // Faz chamadas HTTP e converte respostas JSON.
 async function apiRequest(url, options = {}) {
@@ -223,7 +228,13 @@ function resetForm() {
     formTitle.textContent = 'Cadastrar paciente';
     saveButton.textContent = 'Salvar paciente';
     cancelButton.hidden = true;
-    birthDateInput.max = new Date().toLocaleDateString('en-CA');
+
+    const today = new Date();
+    const year = today.getFullYear();
+    const month = String(today.getMonth() + 1).padStart(2, '0');
+    const day = String(today.getDate()).padStart(2, '0');
+
+    birthDateInput.max = `${year}-${month}-${day}`;
 }
 
 async function startEditing(id) {
