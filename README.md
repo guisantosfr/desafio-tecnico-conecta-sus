@@ -1,50 +1,70 @@
 
 # Desafio Técnico — Cadastro de Pacientes
 
-Aplicação web para cadastrar, consultar, editar e excluir pacientes vinculados a unidades de saúde.
+Aplicação web para cadastrar e consultar pacientes vinculados a unidades de saúde. O projeto foi desenvolvido com Laravel, MySQL e JavaScript puro, conforme os requisitos do desafio técnico.
 
 ## Tecnologias
 
-- PHP
-- Laravel
+- PHP 8.3
+- Laravel 13
 - MySQL
 - HTML, CSS e JavaScript
+- PHPUnit
 - Git
 
 ## Funcionalidades
 
-- Cadastro, listagem, consulta, edição e exclusão de pacientes.
-- Busca parcial por nome.
-- Associação de pacientes a unidades de saúde.
-- Validação de campos obrigatórios, CPF único e data de nascimento.
-- Mensagens de sucesso e erro na interface.
-- Consultas SQL demonstrativas.
+- Listagem de pacientes com nome, CPF e unidade de saúde.
+- Busca parcial de pacientes pelo nome.
+- Cadastro, consulta, edição e exclusão de pacientes.
+- Carregamento das unidades de saúde no formulário.
+- Validação de campos obrigatórios, CPF com 11 dígitos, CPF único, data de nascimento não futura e existência da unidade.
+- Mensagens de sucesso e erro na interface, incluindo erros de validação retornados pela API.
+- Três consultas SQL independentes do Eloquent, em `sql/consultas.sql`.
 
 ## Pré-requisitos
 
-- PHP compatível com a versão do Laravel utilizada.
+Antes de iniciar, instale:
+
+- PHP 8.3 ou superior, com as extensões exigidas pelo Laravel e pelo driver MySQL (`pdo_mysql`).
 - Composer.
-- MySQL.
+- MySQL ou MariaDB.
 - Git.
 
-## Instalação
+## Instalação e configuração
 
-Clone o repositório e entre na pasta do projeto.
+### 1. Clonar o repositório
 
-Instale as dependências:
+```bash
+git clone <URL_DO_REPOSITORIO>
+cd <PASTA_DO_PROJETO>
+```
+
+Substitua os valores pelos dados reais do repositório.
+
+### 2. Instalar dependências
 
 ```bash
 composer install
 ```
 
-Configure o arquivo de ambiente:
+### 3. Configurar o ambiente
+
+Crie o arquivo `.env` a partir do exemplo:
 
 ```bash
 cp .env.example .env
+```
+
+Gere a chave da aplicação:
+
+```bash
 php artisan key:generate
 ```
 
-Edite o `.env` e configure as variáveis de conexão com o MySQL:
+### 4. Criar e configurar o banco de dados
+
+Crie um banco de dados MySQL ou MariaDB. Em seguida, configure as variáveis abaixo no arquivo `.env`, usando os dados do seu ambiente:
 
 ```dotenv
 DB_CONNECTION=mysql
@@ -55,9 +75,9 @@ DB_USERNAME=seu_usuario
 DB_PASSWORD=sua_senha
 ```
 
-Crie o banco de dados antes de executar as migrations.
+Não compartilhe nem versione o arquivo `.env`.
 
-## Banco de dados
+### 5. Criar tabelas e dados iniciais
 
 Execute:
 
@@ -65,59 +85,107 @@ Execute:
 php artisan migrate --seed
 ```
 
-Esse comando cria as tabelas e cadastra as unidades de saúde iniciais.
+As migrations criam as tabelas, incluindo `health_units` e `patients`. O seeder cadastra três unidades de saúde para uso no formulário.
 
-## Executar a aplicação
-
-Inicie o servidor:
+### 6. Iniciar a aplicação
 
 ```bash
 php artisan serve
 ```
 
-Abra no navegador:
+Acesse a aplicação em:
 
 http://127.0.0.1:8000
 
-## API
+O frontend é servido pelo Laravel. Não é necessário iniciar um servidor separado para os arquivos HTML, CSS e JavaScript.
+
+
+## Endpoints da API
+
+A API utiliza JSON e está disponível sob o prefixo `/api`.
 
 | Método | Endpoint | Descrição |
-|--------|----------|-----------|
-| GET | /api/health-units | Listar unidades |
-| GET | /api/patients | Listar pacientes |
-| GET | /api/patients?search=Maria | Pesquisar pacientes |
-| POST | /api/patients | Cadastrar paciente |
-| GET | /api/patients/{patient} | Consultar paciente |
-| PUT | /api/patients/{patient} | Editar paciente |
-| DELETE | /api/patients/{patient} | Excluir paciente |
+|---|---|---|
+| GET | `/api/health-units` | Lista as unidades de saúde |
+| GET | `/api/patients` | Lista os pacientes |
+| GET | `/api/patients?search=Maria` | Pesquisa pacientes por parte do nome |
+| POST | `/api/patients` | Cadastra um paciente |
+| GET | `/api/patients/{patient}` | Consulta um paciente |
+| PUT | `/api/patients/{patient}` | Atualiza um paciente |
+| DELETE | `/api/patients/{patient}` | Exclui um paciente |
 
-A API recebe e retorna JSON quando aplicável.
+As falhas de validação da API retornam HTTP `422`. O cadastro bem-sucedido retorna `201`, e a consulta de um paciente inexistente retorna `404`.
+
+### Exemplo de corpo para cadastro
+
+```json
+{
+  "name": "Maria da Silva",
+  "cpf": "12345678901",
+  "birth_date": "2000-01-01",
+  "phone": null,
+  "health_unit_id": 1
+}
+```
+
+O CPF deve conter 11 dígitos numéricos. A validação dos dígitos verificadores do CPF não faz parte do escopo do desafio.
 
 ## Consultas SQL
 
-As três consultas solicitadas no desafio estão no arquivo:
+O arquivo `sql/consultas.sql` contém as três consultas exigidas:
 
-`sql/consultas.sql`
+1. Pacientes com o nome da unidade de saúde, usando `JOIN`.
+2. Total de pacientes por unidade, incluindo unidades sem pacientes, usando `LEFT JOIN` e `GROUP BY`.
+3. Pesquisa de pacientes cujo nome contenha `Maria`, usando `LIKE`.
 
-## Testes
+As consultas são SQL puro, sem Eloquent.
 
-Execute os testes automatizados com:
+## Testes automatizados
+
+Execute a suíte de testes com:
 
 ```bash
 php artisan test
 ```
 
-Configure um banco de testes separado, conforme necessário.
+O arquivo `phpunit.xml` configura o ambiente de testes para usar SQLite em memória. Assim, os testes não precisam usar o banco MySQL de desenvolvimento.
 
-## Status da implementação
+Os testes de funcionalidade cobrem listagem, busca parcial, cadastro, CPF duplicado, formato do CPF, data futura, unidade inexistente, registro inexistente, edição e exclusão.
+
+## Estrutura relevante do projeto
+
+```text
+app/
+  Http/Controllers/Api/
+  Models/
+database/
+  migrations/
+  seeders/
+public/
+  css/app.css
+  js/app.js
+resources/
+  views/patients.blade.php
+routes/
+  api.php
+  web.php
+sql/
+  consultas.sql
+tests/
+  Feature/PatientApiTest.php
+```
+
+## Status
 
 - [x] Migrations e seeder de unidades de saúde.
-- [x] CRUD de pacientes.
+- [x] Relacionamentos Eloquent.
+- [x] CRUD de pacientes por API.
 - [x] Validações no backend.
 - [x] Interface integrada à API.
+- [x] Busca parcial e confirmação de exclusão.
 - [x] Consultas SQL obrigatórias.
-- [x] Teste automatizado de CPF duplicado.
+- [x] Testes automatizados de funcionalidades e validações.
 
-## Git
+## Versionamento
 
-O histórico de commits registra a implementação em etapas.
+O histórico do Git registra a implementação em etapas. O arquivo `.env`, credenciais e dependências instaladas localmente não devem ser enviados ao repositório.
